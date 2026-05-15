@@ -21,6 +21,9 @@ importers:
       '@types/node':
         specifier: ^25.8.0
         version: 25.8.0
+      prettier:
+        specifier: ^3.8.3
+        version: 3.8.3
       tsx:
         specifier: ^4.22.0
         version: 4.22.0
@@ -249,6 +252,11 @@ packages:
   json-schema@0.4.0:
     resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
 
+  prettier@3.8.3:
+    resolution: {integrity: sha512-7igPTM53cGHMW8xWuVTydi2KO233VFiTNyF5hLJqpilHfmn8C8gPf+PS7dUT64YcXFbiMGZxS9pCSxL/Dxm/Jw==}
+    engines: {node: '>=14'}
+    hasBin: true
+
   tsx@4.22.0:
     resolution: {integrity: sha512-8ccZMPD69s1AbKXx0C5ddTNZfNjwV04iIKgjZmKfKxMynEtSYcK0Lh7iQFh53fI5Yu4pb9usgAiqyPmEONaALg==}
     engines: {node: '>=18.0.0'}
@@ -424,6 +432,8 @@ snapshots:
     optional: true
 
   json-schema@0.4.0: {}
+
+  prettier@3.8.3: {}
 
   tsx@4.22.0:
     dependencies:

@@ -2,12 +2,20 @@
   "name": "super-agent-coding",
   "version": "1.0.0",
   "description": "Step-by-step hands-on training in AI agent development.",
-  "keywords": ["AI Agent", "OpenAI", "AI Development", "Coding Training"],
+  "keywords": [
+    "AI Agent",
+    "OpenAI",
+    "AI Development",
+    "Coding Training"
+  ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\""
+  },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.63",
     "ai": "^6.0.182",
@@ -15,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.8.0",
+    "prettier": "^3.8.3",
     "tsx": "^4.22.0",
     "typescript": "^6.0.3"
   }
