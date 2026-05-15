@@ -1,15 +1,13 @@
 {
   "name": "super-agent-coding",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
+  "description": "Step-by-step hands-on training in AI agent development.",
+  "keywords": ["AI Agent", "OpenAI", "AI Development", "Coding Training"],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
+  "type": "module",
+  "scripts": {},
   "dependencies": {
     "@ai-sdk/openai": "^3.0.63",
     "ai": "^6.0.182",
