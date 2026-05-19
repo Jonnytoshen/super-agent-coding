@@ -61,6 +61,13 @@ if (specifiedVersion != null && !isValidSemver(specifiedVersion)) {
   error(`Invalid version "${specifiedVersion}". Expected format: MAJOR.MINOR.PATCH (e.g. 1.2.3)`);
 }
 
+if (specifiedVersion != null && specifiedVersion === readPkg().version) {
+  error(
+    `Version "${specifiedVersion}" is the same as the current package.json version.\n` +
+      `  To publish the first release without bumping, use: pnpm release --first-release`,
+  );
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 // release-it requires --ci to suppress interactive prompts.
@@ -73,16 +80,17 @@ if (isDryRun) {
 }
 
 if (isFirstRelease) {
-  // Use the version already in package.json; pass it as --increment so release-it
-  // treats it as an exact target version (semver string, not a bump type).
+  // Use the version already in package.json and skip the npm version bump step
+  // (--no-increment). release-it will tag and commit with the current version.
   const { version } = readPkg();
   log(`First release — using package.json version: ${version}`);
-  releaseIt([`--increment=${version}`, ...commonArgs]);
+  releaseIt([`--no-increment`, ...commonArgs]);
 } else if (specifiedVersion != null) {
+  // Explicit semver target; release-it accepts a full semver string as --increment.
   log(`Specified version: ${specifiedVersion}`);
   releaseIt([`--increment=${specifiedVersion}`, ...commonArgs]);
 } else {
-  // No --increment passed: the @release-it/conventional-changelog plugin
+  // No version specified: the @release-it/conventional-changelog plugin
   // reads commit history and automatically determines major/minor/patch.
   log('Auto bump — delegating to @release-it/conventional-changelog plugin…');
   releaseIt([...commonArgs]);

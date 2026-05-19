@@ -66,7 +66,8 @@ git commit --no-verify -m "chore: ..."
 
 ### 首次发布
 
-使用 `package.json` 中的 `version` 作为发布版本号，并生成初始 CHANGELOG：
+使用 `package.json` 中的 `version` 作为发布版本号，生成初始 CHANGELOG，**不递增版本号**。
+适用于仓库尚无任何 git tag 的第一次正式发布。
 
 ```bash
 pnpm release:first
@@ -75,6 +76,8 @@ pnpm release --first-release
 ```
 
 ### 指定版本发布
+
+> **注意**：指定版本号必须高于当前 `package.json` 中的版本，否则会报错并提示改用 `--first-release`。
 
 ```bash
 pnpm release --version 1.2.3
