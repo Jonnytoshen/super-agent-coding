@@ -1,7 +1,9 @@
-import { type ModelMessage, streamText } from 'ai';
+import type { ModelMessage, ToolSet } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { DASHSCOPE_API_KEY } from './config';
 import { createInterface } from 'node:readline';
+import { CalculatorTool, WeatherTool } from './tools';
+import { agentLoop } from './agent-loop';
 
 // 创建 OpenAI 实例
 const qwen = createOpenAI({
@@ -18,7 +20,18 @@ const rl = createInterface({
   output: process.stdout,
 });
 
+// 定义工具集
+const tools: ToolSet = {
+  get_weather: WeatherTool,
+  calculator: CalculatorTool,
+};
+
+// 消息列表，存储用户和模型的对话历史
 const messages: ModelMessage[] = [];
+
+const SYSTEM = `你是 Super Agent，一个有工具调用能力的 AI 助手。
+需要查询信息时，主动使用工具，不要编造数据。
+回答要简洁直接。`;
 
 function askQuestion() {
   rl.question('\nYou: ', (input) => {
@@ -35,27 +48,8 @@ function askQuestion() {
       // 将用户输入添加到消息列表中
       messages.push({ role: 'user', content: trimmed });
 
-      // 调用模型生成响应
-      const result = streamText({
-        model,
-        system: `你是 Super Agent，一个专注于软件开发的 AI 助手。
-你说话简洁直接，喜欢用代码示例来解释问题。
-如果用户的问题不够清晰，你会反问而不是瞎猜。`,
-        messages,
-      });
-
-      process.stdout.write('Assistant: ');
-
-      // 逐步输出模型的响应
-      let fullResponse = '';
-      for await (const chunk of result.textStream) {
-        process.stdout.write(chunk);
-        fullResponse += chunk;
-      }
-      console.log(); // 换行
-
-      // 将模型的完整响应添加到消息列表中
-      messages.push({ role: 'assistant', content: fullResponse });
+      // 进入 Agent 循环
+      await agentLoop(model, tools, messages, SYSTEM);
 
       // 继续提问
       askQuestion();
@@ -63,5 +57,5 @@ function askQuestion() {
   });
 }
 
-console.log('Super Agent v0.1.0 (type "exit" to quit)\n');
+console.log('Super Agent v0.2.0 - Agent Loop (type "exit" to quit)\n');
 askQuestion();
