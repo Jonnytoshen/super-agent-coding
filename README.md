@@ -27,6 +27,39 @@ chore    构建或辅助工具变更
 
 `commit-msg` husky 钩子会自动校验提交消息格式，不符合规范的提交会被拦截。
 
+## 代码规范与 Lint
+
+项目使用 [ESLint v9 Flat Config](https://eslint.org/docs/latest/use/configure/configuration-files) + `typescript-eslint`（带类型感知规则），并与 Prettier 共存（互不冲突）。
+
+### 常用命令
+
+| 命令                | 说明                             |
+| ------------------- | -------------------------------- |
+| `pnpm lint`         | 检查所有文件，列出问题           |
+| `pnpm lint:fix`     | 检查并自动修复可修复问题         |
+| `pnpm lint:cache`   | 增量检查（利用缓存，速度更快）   |
+| `pnpm format:check` | 仅验证 Prettier 格式，不修改文件 |
+
+### 提交前自动检查
+
+提交时 Husky `pre-commit` 钩子会自动运行 `lint-staged`，只处理暂存的文件：
+
+- `src/**/*.{ts,tsx}` → `eslint --fix` + `prettier --write`
+- `scripts/**/*.{js,mjs}` → `eslint --fix` + `prettier --write`
+- `**/*.{json,md}` → `prettier --write`
+
+如需临时跳过（**不推荐**）：
+
+```bash
+git commit --no-verify -m "chore: ..."
+```
+
+### Hono 路由规则说明
+
+`eslint.config.mjs` 中已预留 Hono 路由目录专属规则注释区。当 `src/routes` 或 `src/app` 路由文件引入后，可在该区域直接追加约束（无需重构整体配置结构）。
+
+---
+
 ## 发布流程
 
 > 发布前请确保工作区干净（无未提交更改）。

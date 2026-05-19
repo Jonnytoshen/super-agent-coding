@@ -6,7 +6,7 @@
 //   pnpm release --version 1.2.3       Force specific version
 //   Add --dry-run to any of the above  Preview without writing
 
-import { execFileSync, execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

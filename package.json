@@ -15,6 +15,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:cache": "eslint . --cache",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "prepare": "husky",
@@ -33,18 +36,37 @@
     "ai": "^6.0.182",
     "dotenv": "^17.4.2"
   },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "scripts/**/*.{js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,md}": [
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
-    "husky": "^9.1.7",
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
+    "@eslint/js": "^10.0.1",
     "@release-it/conventional-changelog": "^11.0.0",
     "@types/node": "^25.8.0",
     "commitizen": "^4.3.1",
     "conventional-recommended-bump": "^11.2.0",
     "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
     "prettier": "^3.8.3",
     "release-it": "^20.0.1",
     "tsx": "^4.22.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.3"
   }
 }
