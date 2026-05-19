@@ -43,20 +43,6 @@ function releaseIt(extraArgs) {
   execFileSync('npx', args, { stdio: 'inherit', cwd: root });
 }
 
-/**
- * Use conventional-recommended-bump to determine the bump type
- * based on commits since the last tag.
- * Returns 'major' | 'minor' | 'patch'.
- */
-async function detectBumpType() {
-  // Dynamic import because it's an ESM-only package
-  const { Bumper } = await import('conventional-recommended-bump');
-  const bumper = new Bumper(root).loadPreset('conventionalcommits');
-  const recommendation = await bumper.bump();
-  const types = ['major', 'minor', 'patch'];
-  return types[recommendation.releaseType] ?? 'patch';
-}
-
 // ── arg parsing ──────────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
@@ -96,8 +82,8 @@ if (isFirstRelease) {
   log(`Specified version: ${specifiedVersion}`);
   releaseIt([`--increment=${specifiedVersion}`, ...commonArgs]);
 } else {
-  log('Auto-detecting bump type from conventional commits…');
-  const bumpType = await detectBumpType();
-  log(`Detected bump type: ${bumpType}`);
-  releaseIt([`--increment=${bumpType}`, ...commonArgs]);
+  // No --increment passed: the @release-it/conventional-changelog plugin
+  // reads commit history and automatically determines major/minor/patch.
+  log('Auto bump — delegating to @release-it/conventional-changelog plugin…');
+  releaseIt([...commonArgs]);
 }

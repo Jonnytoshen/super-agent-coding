@@ -56,7 +56,6 @@
     "@release-it/conventional-changelog": "^11.0.0",
     "@types/node": "^25.8.0",
     "commitizen": "^4.3.1",
-    "conventional-recommended-bump": "^11.2.0",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
