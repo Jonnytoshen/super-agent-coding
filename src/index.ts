@@ -4,6 +4,7 @@ import { DASHSCOPE_API_KEY } from './config';
 import { createInterface } from 'node:readline';
 import { CalculatorTool, WeatherTool } from './tools';
 import { agentLoop } from './agent-loop';
+import { VERSION } from './version';
 
 // 创建 OpenAI 实例
 const qwen = createOpenAI({
@@ -57,5 +58,5 @@ function askQuestion() {
   });
 }
 
-console.log('Super Agent v0.2.0 - Agent Loop (type "exit" to quit)\n');
+console.log(`Super Agent v${VERSION} - Agent Loop (type "exit" to quit)\n`);
 askQuestion();
