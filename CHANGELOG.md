@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.2.0...v0.3.0) (2026-05-21)
+
+### Features
+
+- add @ai-sdk/provider dependency ([c9c63c2](https://github.com/Jonnytoshen/super-agent-coding/commit/c9c63c21c65fed48f96d75690117de6f9b140ad8))
+- add mock model implementation with tool calling and loop testing support ([b0e0d39](https://github.com/Jonnytoshen/super-agent-coding/commit/b0e0d3916b4ffce292b14b457bbd45fb175c2c16))
+- add three-layer agent loop protection ([861f9d2](https://github.com/Jonnytoshen/super-agent-coding/commit/861f9d282d4be28eef426e71109d294d93c42868))
+- **types:** add SafeAny type and index export ([233cada](https://github.com/Jonnytoshen/super-agent-coding/commit/233cada41c358b6a1dea94fafeb8f6896f77af76))
+
 ## [0.2.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.1.0...v0.2.0) (2026-05-19)
 
 ### Features
