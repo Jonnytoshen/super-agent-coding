@@ -3,8 +3,9 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { DASHSCOPE_API_KEY } from './config';
 import { createInterface } from 'node:readline';
 import { CalculatorTool, WeatherTool } from './tools';
-import { agentLoop } from './agent-loop';
+import { agentLoop, type BudgetState } from './agent-loop';
 import { VERSION } from './version';
+import { createMockModel } from './mock-model';
 
 // 创建 OpenAI 实例
 const qwen = createOpenAI({
@@ -13,7 +14,7 @@ const qwen = createOpenAI({
 });
 
 // 创建聊天模型实例
-const model = qwen.chat('qwen-plus-latest');
+const model = DASHSCOPE_API_KEY ? qwen.chat('qwen-plus-latest') : createMockModel();
 
 // 创建 readline 接口
 const rl = createInterface({
@@ -29,12 +30,14 @@ const tools: ToolSet = {
 
 // 消息列表，存储用户和模型的对话历史
 const messages: ModelMessage[] = [];
+// 预算由调用方持有，跨轮持续累计——agentLoop 只负责消费它
+const budget: BudgetState = { used: 0, limit: 15000 };
 
 const SYSTEM = `你是 Super Agent，一个有工具调用能力的 AI 助手。
 需要查询信息时，主动使用工具，不要编造数据。
 回答要简洁直接。`;
 
-function askQuestion() {
+function ask() {
   rl.question('\nYou: ', (input) => {
     void (async () => {
       const trimmed = input.trim();
@@ -50,13 +53,14 @@ function askQuestion() {
       messages.push({ role: 'user', content: trimmed });
 
       // 进入 Agent 循环
-      await agentLoop(model, tools, messages, SYSTEM);
+      await agentLoop(model, tools, messages, SYSTEM, budget);
 
       // 继续提问
-      askQuestion();
+      ask();
     })();
   });
 }
 
 console.log(`Super Agent v${VERSION} - Agent Loop (type "exit" to quit)\n`);
-askQuestion();
+console.log('试试输入："测试死循环"、"测试重试"、"测试预算" 看三层防护效果\n');
+ask();
