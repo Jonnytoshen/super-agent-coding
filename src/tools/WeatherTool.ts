@@ -1,15 +1,18 @@
-import { jsonSchema } from 'ai';
+import type { ToolDefinition } from './tool-registry';
 
-export const WeatherTool = {
+export const WeatherTool: ToolDefinition = {
+  name: 'get_weather',
   description: '查询指定城市的天气信息',
-  inputSchema: jsonSchema({
+  parameters: {
     type: 'object',
     properties: {
       city: { type: 'string', description: '城市名称，如"北京"、"上海"' },
     },
     required: ['city'],
     additionalProperties: false,
-  }),
+  },
+  isConcurrencySafe: true,
+  isReadOnly: true,
   execute: async ({ city }: { city: string }) => {
     // 先用假数据，后面会接真实 API
     const mockWeather: Record<string, string> = {
