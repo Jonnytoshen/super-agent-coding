@@ -44,6 +44,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-this-alias': 'off',
 
       // ── Hono 预留区 ──────────────────────────────────────────────────────────
       // 当 src/routes 或 src/app 路由文件引入后，可在此补充：
