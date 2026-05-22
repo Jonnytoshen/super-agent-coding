@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.3.0...v0.4.0) (2026-05-22)
+
+### Features
+
+- **mock-model:** 支持并发工具调用、文件工具意图检测、简化 usage 常量 ([e54d0fb](https://github.com/Jonnytoshen/super-agent-coding/commit/e54d0fbffa49628d6405d1d55f65affa463ec9cb))
+- **tool-registry:** implement ToolRegistry and truncateResult function for tool management ([04d9a37](https://github.com/Jonnytoshen/super-agent-coding/commit/04d9a37b740923fa278127c779c84be984d7d397))
+- **tool-registry:** 为 ToolRegistry 引入读写锁，保障工具并发安全 ([8256d39](https://github.com/Jonnytoshen/super-agent-coding/commit/8256d39251707c86c3022fe371aa997eaf189f33))
+- **tools:** 新增文件操作工具及 ToolDefinition 统一定义 ([d4e5561](https://github.com/Jonnytoshen/super-agent-coding/commit/d4e55619c0ed0119aac12e47990c7e912e564553))
+
 ## [0.3.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.2.0...v0.3.0) (2026-05-21)
 
 ### Features
