@@ -1,16 +1,13 @@
 import { streamText } from 'ai';
-import type { ModelMessage, ToolSet } from 'ai';
+import type { ModelMessage } from 'ai';
 import type { LanguageModelV3 } from '@ai-sdk/provider';
 import { detect, recordCall, recordResult, resetHistory } from './loop-detection';
 import { calculateDelay, isRetryable, sleep } from './retry';
+import type { ToolRegistry } from './tools';
 
 const MAX_STEPS = 15;
 const MAX_RETRIES = 3;
-
-export interface BudgetState {
-  used: number;
-  limit: number;
-}
+const TOKEN_BUDGET = 50000;
 
 /**
  * ** Agent 循环的核心逻辑**
@@ -36,12 +33,12 @@ export interface BudgetState {
  */
 export async function agentLoop(
   model: LanguageModelV3,
-  tools: ToolSet,
+  registry: ToolRegistry,
   messages: ModelMessage[],
   system: string,
-  budget: BudgetState,
 ) {
   let step = 0;
+  let totalTokens = 0;
 
   resetHistory(); // 每次新的 Agent 循环开始时，重置工具调用历史记录
 
@@ -96,7 +93,7 @@ export async function agentLoop(
         const result = streamText({
           model,
           system,
-          tools,
+          tools: registry.toAISDKFormat(),
           messages,
           maxRetries: 0, // 第二层防护启用，先禁用模型重试，让我们专注测试第一层的循环检测
           providerOptions: {
@@ -162,13 +159,16 @@ export async function agentLoop(
     // Token 预算追踪：budget 由调用方持有，跨轮持续累计
     const inp = stepUsage.inputTokens ?? 0;
     const out = stepUsage.outputTokens ?? 0;
-    budget.used += inp + out;
-    const pct = Math.round((budget.used / budget.limit) * 100);
 
-    console.log(`  [Token] ${budget.used}/${budget.limit} (${pct}%)`);
+    totalTokens += inp + out;
 
-    if (budget.used > budget.limit) {
-      console.log('\n[Token 预算耗尽，强制停止]');
+    if (totalTokens > TOKEN_BUDGET * 0.9) {
+      console.log(
+        `  [Token] ${totalTokens}/${TOKEN_BUDGET} (${Math.round((totalTokens / TOKEN_BUDGET) * 100)}%)`,
+      );
+    }
+    if (totalTokens > TOKEN_BUDGET) {
+      console.log('\n[Token 预算耗尽]');
       break;
     }
 

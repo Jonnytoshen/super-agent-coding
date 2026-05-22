@@ -1,9 +1,9 @@
-import type { ModelMessage, ToolSet } from 'ai';
+import type { ModelMessage } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { DASHSCOPE_API_KEY } from './config';
 import { createInterface } from 'node:readline';
-import { CalculatorTool, WeatherTool } from './tools';
-import { agentLoop, type BudgetState } from './agent-loop';
+import { allTools, ToolRegistry } from './tools';
+import { agentLoop } from './agent-loop';
 import { VERSION } from './version';
 import { createMockModel } from './mock-model';
 
@@ -16,25 +16,32 @@ const qwen = createOpenAI({
 // 创建聊天模型实例
 const model = DASHSCOPE_API_KEY ? qwen.chat('qwen-plus-latest') : createMockModel();
 
+// 注册工具
+const registry = new ToolRegistry();
+registry.register(...allTools);
+
+console.log(`已注册 ${registry.getAll().length} 个工具：`);
+for (const tool of registry.getAll()) {
+  const flags = [
+    tool.isConcurrencySafe ? '可并发' : '串行',
+    tool.isReadOnly ? '只读' : '读写',
+  ].join(', ');
+  console.log(`  - ${tool.name}（${flags}）`);
+}
+
 // 创建 readline 接口
 const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-// 定义工具集
-const tools: ToolSet = {
-  get_weather: WeatherTool,
-  calculator: CalculatorTool,
-};
-
 // 消息列表，存储用户和模型的对话历史
 const messages: ModelMessage[] = [];
-// 预算由调用方持有，跨轮持续累计——agentLoop 只负责消费它
-const budget: BudgetState = { used: 0, limit: 15000 };
 
 const SYSTEM = `你是 Super Agent，一个有工具调用能力的 AI 助手。
-需要查询信息时，主动使用工具，不要编造数据。
+你有以下工具可用：get_weather, calculator, read_file, write_file, list_directory。
+需要查询信息或操作文件时，主动使用工具，不要编造数据。
+可以同时调用多个互不冲突的工具来提高效率。
 回答要简洁直接。`;
 
 function ask() {
@@ -53,7 +60,7 @@ function ask() {
       messages.push({ role: 'user', content: trimmed });
 
       // 进入 Agent 循环
-      await agentLoop(model, tools, messages, SYSTEM, budget);
+      await agentLoop(model, registry, messages, SYSTEM);
 
       // 继续提问
       ask();
