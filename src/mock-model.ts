@@ -81,6 +81,10 @@ function detectToolIntent(prompt: LanguageModelV3Prompt): ToolCallIntent | null 
     };
   }
 
+  if (text.includes('测试glob') || text.includes('test glob')) {
+    return { toolName: 'glob', args: { pattern: '**/*.ts' } };
+  }
+
   if (text.includes('目录') || text.includes('文件列表') || text.includes('ls')) {
     return { toolName: 'list_directory', args: { path: '.' } };
   }
