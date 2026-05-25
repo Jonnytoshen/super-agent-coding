@@ -2,114 +2,120 @@
 
 Step-by-step hands-on training in AI agent development.
 
-## 提交规范
+这是一个用于学习和演示 Agent Loop 的 TypeScript CLI 项目，核心聚焦在：
 
-项目使用 [Conventional Commits](https://www.conventionalcommits.org/) 规范，提交时建议通过交互式命令：
+- 工具调用（Tool Calling）
+- 多步推理循环（Agent Loop）
+- 稳定性防护（循环检测、重试、Token 预算）
+
+## 核心能力
+
+- 交互式命令行 Agent，支持持续对话
+- 9 个内置工具（文件、搜索、Shell、计算、天气）
+- 支持并发工具调用，ToolRegistry 内置读写锁调度
+- 三层防护机制：循环检测、API 重试、Token 预算控制
+- 无 API Key 时自动切换 Mock 模型，便于本地演练
+
+## 项目结构
+
+```text
+.
+├── scripts/
+│   └── release.mjs               # 自定义发布脚本
+├── src/
+│   ├── index.ts                  # CLI 入口
+│   ├── agent-loop.ts             # Agent 主循环
+│   ├── loop-detection.ts         # 循环检测
+│   ├── retry.ts                  # 重试策略
+│   ├── mock-model.ts             # 本地 Mock 模型
+│   └── tools/                    # 工具系统与内置工具
+├── sample-data.txt               # 测试文件（用于工具演示）
+└── CHANGELOG.md
+```
+
+## 快速开始
+
+### 1) 环境要求
+
+- Node.js 20+
+- pnpm 10+
+
+### 2) 安装依赖
 
 ```bash
-pnpm commit
+pnpm install
 ```
 
-提交格式：
-
-```
-<type>(<scope>): <subject>
-
-feat     新功能
-fix      Bug 修复
-docs     文档变更
-style    代码格式（不影响逻辑）
-refactor 重构
-perf     性能优化
-test     测试
-chore    构建或辅助工具变更
-```
-
-`commit-msg` husky 钩子会自动校验提交消息格式，不符合规范的提交会被拦截。
-
-## 代码规范与 Lint
-
-项目使用 [ESLint v9 Flat Config](https://eslint.org/docs/latest/use/configure/configuration-files) + `typescript-eslint`（带类型感知规则），并与 Prettier 共存（互不冲突）。
-
-### 常用命令
-
-| 命令                | 说明                             |
-| ------------------- | -------------------------------- |
-| `pnpm lint`         | 检查所有文件，列出问题           |
-| `pnpm lint:fix`     | 检查并自动修复可修复问题         |
-| `pnpm lint:cache`   | 增量检查（利用缓存，速度更快）   |
-| `pnpm format:check` | 仅验证 Prettier 格式，不修改文件 |
-
-### 提交前自动检查
-
-提交时 Husky `pre-commit` 钩子会自动运行 `lint-staged`，只处理暂存的文件：
-
-- `src/**/*.{ts,tsx}` → `eslint --fix` + `prettier --write`
-- `scripts/**/*.{js,mjs}` → `eslint --fix` + `prettier --write`
-- `**/*.{json,md}` → `prettier --write`
-
-如需临时跳过（**不推荐**）：
+### 3) 配置环境变量（可选）
 
 ```bash
-git commit --no-verify -m "chore: ..."
+cp .env.example .env
 ```
 
-### Hono 路由规则说明
+- 配置 `DASHSCOPE_API_KEY` 后使用 Qwen 模型
+- 不配置时自动使用 `src/mock-model.ts`（适合本地测试）
 
-`eslint.config.mjs` 中已预留 Hono 路由目录专属规则注释区。当 `src/routes` 或 `src/app` 路由文件引入后，可在该区域直接追加约束（无需重构整体配置结构）。
-
----
-
-## 发布流程
-
-> 发布前请确保工作区干净（无未提交更改）。
-
-### 首次发布
-
-使用 `package.json` 中的 `version` 作为发布版本号，生成初始 CHANGELOG，**不递增版本号**。
-适用于仓库尚无任何 git tag 的第一次正式发布。
+### 4) 启动
 
 ```bash
-pnpm release:first
-# 等价于
-pnpm release --first-release
+pnpm start
 ```
 
-### 指定版本发布
-
-> **注意**：指定版本号必须高于当前 `package.json` 中的版本，否则会报错并提示改用 `--first-release`。
+开发模式（监听变更）：
 
 ```bash
-pnpm release --version 1.2.3
+pnpm dev
 ```
 
-### 自动判断版本（推荐日常使用）
+## 示例指令
 
-根据提交记录自动推导 major / minor / patch：
+启动后可直接输入：
 
-- `fix:` → patch（1.0.0 → 1.0.1）
-- `feat:` → minor（1.0.0 → 1.1.0）
-- `BREAKING CHANGE` → major（1.0.0 → 2.0.0）
+- 测试编辑
+- 测试glob
+- 测试搜索
+- 测试bash
+- 测试并发
+- 测试重试
+- 测试死循环
 
-```bash
-pnpm release
-```
+## 内置工具一览
 
-### Dry Run（预览，不写入）
+| 工具名           | 作用                      | 并发安全 | 只读 |
+| ---------------- | ------------------------- | -------- | ---- |
+| `get_weather`    | 查询城市天气（Mock 数据） | 是       | 是   |
+| `calculator`     | 计算数学表达式            | 是       | 是   |
+| `read_file`      | 读取文件内容              | 是       | 是   |
+| `list_directory` | 列目录内容                | 是       | 是   |
+| `glob`           | 按模式搜索文件            | 是       | 是   |
+| `grep`           | 跨文件正则搜索            | 是       | 是   |
+| `write_file`     | 写入文件                  | 否       | 否   |
+| `edit_file`      | 精确替换文件片段          | 否       | 否   |
+| `bash`           | 执行 Shell 命令           | 否       | 否   |
 
-在任意发布命令后追加 `--dry-run`：
+## 常用脚本
 
-```bash
-pnpm release --dry-run
-pnpm release --first-release --dry-run
-pnpm release --version 1.2.3 --dry-run
-# 或使用便捷脚本
-pnpm release:dry
-```
+| 命令                | 说明                        |
+| ------------------- | --------------------------- |
+| `pnpm start`        | 启动 CLI Agent              |
+| `pnpm dev`          | 监听模式启动                |
+| `pnpm lint`         | 执行 ESLint 检查            |
+| `pnpm lint:fix`     | 自动修复可修复问题          |
+| `pnpm format:check` | 校验 Prettier 格式          |
+| `pnpm preflight`    | 提交前检查（lint + format） |
 
-发布命令执行后会自动完成：
+## 开发文档
 
-1. 更新 `package.json` 中的版本号
-2. 生成 / 追加 `CHANGELOG.md`
-3. 创建 release commit（`chore(release): vX.Y.Z`）
-4. 打 git tag（`vX.Y.Z`）
+README 仅保留项目使用与能力概览，开发流程拆分到独立文档：
+
+- [提交规范](docs/development/commit-convention.md)
+- [代码规范与质量检查](docs/development/code-style-and-quality.md)
+- [发布流程](docs/development/release-process.md)
+
+## 版本记录
+
+- 详见 [CHANGELOG.md](CHANGELOG.md)
+
+## License
+
+ISC
