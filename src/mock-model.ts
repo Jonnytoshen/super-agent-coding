@@ -85,6 +85,18 @@ function detectToolIntent(prompt: LanguageModelV3Prompt): ToolCallIntent | null 
     return { toolName: 'glob', args: { pattern: '**/*.ts' } };
   }
 
+  if (text.includes('测试搜索') || text.includes('test grep')) {
+    return { toolName: 'grep', args: { pattern: 'export', path: 'src' } };
+  }
+
+  if (
+    (text.includes('搜') || text.includes('找') || text.includes('grep')) &&
+    !text.includes('文件')
+  ) {
+    const keyword = text.replace(/.*(?:搜|找|grep)\s*/, '').trim() || 'TODO';
+    return { toolName: 'grep', args: { pattern: keyword, path: '.' } };
+  }
+
   if (text.includes('目录') || text.includes('文件列表') || text.includes('ls')) {
     return { toolName: 'list_directory', args: { path: '.' } };
   }
