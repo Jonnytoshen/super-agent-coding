@@ -2,6 +2,7 @@ export * from './tool-registry';
 export * from './tools';
 
 export * from './CalculatorTool';
+export * from './EditFileTool';
 export * from './ListDirectoryTool';
 export * from './ReadFileTool';
 export * from './WeatherTool';
