@@ -39,7 +39,7 @@ const rl = createInterface({
 const messages: ModelMessage[] = [];
 
 const SYSTEM = `你是 Super Agent，一个有工具调用能力的 AI 助手。
-你有以下工具可用：get_weather, calculator, read_file, write_file, list_directory。
+你有以下工具可用：get_weather, calculator, read_file, write_file, list_directory, edit_file。
 需要查询信息或操作文件时，主动使用工具，不要编造数据。
 可以同时调用多个互不冲突的工具来提高效率。
 回答要简洁直接。`;
@@ -69,5 +69,5 @@ function ask() {
 }
 
 console.log(`Super Agent v${VERSION} - Agent Loop (type "exit" to quit)\n`);
-console.log('试试输入："测试死循环"、"测试重试"、"测试预算" 看三层防护效果\n');
+console.log('试试："测试编辑"\n');
 ask();

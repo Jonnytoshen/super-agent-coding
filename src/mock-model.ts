@@ -1,5 +1,5 @@
 /**
- * Mock Model v0.4.0 — Tool System
+ * Mock Model v0.4.1 — Tool System
  *
  * 在 v0.3.0 基础上新增：
  * - 文件操作工具支持（read_file, list_directory）
@@ -17,8 +17,8 @@ let retryTestCount = 0;
 
 const TEXT_RESPONSES: Record<string, string> = {
   default:
-    '你好！我是 Super Agent v0.4.0，现在有完整的工具系统了。试试让我读文件、查目录，或者输入"测试并发"、"测试截断"看看新功能。',
-  greeting: '你好！我是 Super Agent v0.4.0，带有工具注册、结果截断和并发执行能力 :)',
+    '你好！我是 Super Agent v0.4.1，现在有 9 个内置工具了。试试"测试编辑"、"测试搜索"、"测试glob"、"测试bash"看看新功能。',
+  greeting: '你好！我是 Super Agent v0.4.1，支持文件编辑、搜索、命令执行 :)',
 };
 
 interface ToolCallIntent {
@@ -68,6 +68,17 @@ function detectToolIntent(prompt: LanguageModelV3Prompt): ToolCallIntent | null 
 
   if (text.includes('测试截断') || text.includes('test truncation')) {
     return { toolName: 'read_file', args: { path: 'sample-data.txt' } };
+  }
+
+  if (text.includes('测试编辑') || text.includes('test edit')) {
+    return {
+      toolName: 'edit_file',
+      args: {
+        path: 'sample-data.txt',
+        old_string: '一、工具注册机制',
+        new_string: '一、工具注册机制（已更新）',
+      },
+    };
   }
 
   if (text.includes('目录') || text.includes('文件列表') || text.includes('ls')) {
