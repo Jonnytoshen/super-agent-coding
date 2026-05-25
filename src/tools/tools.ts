@@ -1,6 +1,7 @@
 import type { ToolDefinition } from './tool-registry';
 import { CalculatorTool } from './CalculatorTool';
 import { EditFileTool } from './EditFileTool';
+import { GlobTool } from './GlobTool';
 import { ListDirectoryTool } from './ListDirectoryTool';
 import { ReadFileTool } from './ReadFileTool';
 import { WeatherTool } from './WeatherTool';
@@ -12,6 +13,7 @@ import { WriteFileTool } from './WriteFileTool';
 export const allTools: ToolDefinition[] = [
   CalculatorTool,
   EditFileTool,
+  GlobTool,
   ListDirectoryTool,
   ReadFileTool,
   WriteFileTool,
