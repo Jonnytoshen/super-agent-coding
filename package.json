@@ -35,7 +35,8 @@
     "@ai-sdk/openai": "^3.0.63",
     "@ai-sdk/provider": "^3.0.10",
     "ai": "^6.0.182",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "fast-glob": "^3.3.3"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
