@@ -97,6 +97,10 @@ function detectToolIntent(prompt: LanguageModelV3Prompt): ToolCallIntent | null 
     return { toolName: 'grep', args: { pattern: keyword, path: '.' } };
   }
 
+  if (text.includes('测试bash') || text.includes('test bash')) {
+    return { toolName: 'bash', args: { command: 'echo "Hello from bash!" && date' } };
+  }
+
   if (text.includes('目录') || text.includes('文件列表') || text.includes('ls')) {
     return { toolName: 'list_directory', args: { path: '.' } };
   }
