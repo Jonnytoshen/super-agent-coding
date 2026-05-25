@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.1](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.0...v0.4.1) (2026-05-25)
+
+### Features
+
+- add sample data file for test tools ([ad18fbb](https://github.com/Jonnytoshen/super-agent-coding/commit/ad18fbbe32c888ff9d05660e451f1338f16bdce7))
+- **dependencies:** add fast-glob package for enhanced file operations ([69b40e1](https://github.com/Jonnytoshen/super-agent-coding/commit/69b40e151129ff996b2ef7da69320b7f8deb9fdf))
+- **tools:** 新增 BashTool，支持执行 shell 命令 ([bd63b75](https://github.com/Jonnytoshen/super-agent-coding/commit/bd63b75f8240f5cac8f2dad1f9cd1537b3e77f28))
+- **tools:** 新增 EditFileTool，支持文件精确局部替换 ([10be348](https://github.com/Jonnytoshen/super-agent-coding/commit/10be348e26e549aac9166fb6749104bdfbe7d85b))
+- **tools:** 新增 GlobTool，支持 glob 模式文件搜索 ([fd6f9af](https://github.com/Jonnytoshen/super-agent-coding/commit/fd6f9af8c5e473f4ab97848056ed665cf21fcb69))
+- **tools:** 新增 GrepTool，支持跨文件正则搜索 ([907bc43](https://github.com/Jonnytoshen/super-agent-coding/commit/907bc43484233f031b094ddae0f1f7954f8871f5))
+
 ## [0.4.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.3.0...v0.4.0) (2026-05-22)
 
 ### Features
