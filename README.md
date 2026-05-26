@@ -8,11 +8,18 @@ Step-by-step hands-on training in AI agent development.
 - 多步推理循环（Agent Loop）
 - 稳定性防护（循环检测、重试、Token 预算）
 
+当前版本额外内置了三个适合本地演练的 Mini Apps demo：
+
+- 代码分析 Agent：扫描示例项目中的 TODO/FIXME 并归类总结
+- Research Agent：抓取一个或多个网页并输出摘要
+- Vibe Coding Agent：生成 React 多文件小应用并启动本地预览
+
 ## 核心能力
 
 - 交互式命令行 Agent，支持持续对话
-- 9 个内置工具（文件、搜索、Shell、计算、天气）
+- 11 个内置工具（文件、搜索、Shell、计算、天气、网页抓取、预览）
 - 支持并发工具调用，ToolRegistry 内置读写锁调度
+- 支持直接生成 `app/` 下的前端 demo，并通过预览服务器访问
 - 三层防护机制：循环检测、API 重试、Token 预算控制
 - 无 API Key 时自动切换 Mock 模型，便于本地演练
 
@@ -20,6 +27,11 @@ Step-by-step hands-on training in AI agent development.
 
 ```text
 .
+├── app/
+│   └── index.html               # 前端 demo 固定入口（预置 React + Babel TSX bootstrap）
+├── docs/
+│   └── development/             # 开发规范、提交规范、发布流程
+├── sample-project/              # 供代码分析 demo 使用的示例项目
 ├── scripts/
 │   └── release.mjs               # 自定义发布脚本
 ├── src/
@@ -67,10 +79,15 @@ pnpm start
 pnpm dev
 ```
 
+启动后可直接在 CLI 中输入自然语言指令，Agent 会自动决定是否调用工具。
+
 ## 示例指令
 
 启动后可直接输入：
 
+- 找出项目里所有 TODO
+- 去 https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling 看下文档总结
+- 做一个待办清单的网页应用
 - 测试编辑
 - 测试glob
 - 测试搜索
@@ -89,9 +106,20 @@ pnpm dev
 | `list_directory` | 列目录内容                | 是       | 是   |
 | `glob`           | 按模式搜索文件            | 是       | 是   |
 | `grep`           | 跨文件正则搜索            | 是       | 是   |
+| `fetch_url`      | 抓取网页并提取纯文本      | 是       | 是   |
 | `write_file`     | 写入文件                  | 否       | 否   |
 | `edit_file`      | 精确替换文件片段          | 否       | 否   |
+| `start_preview`  | 启动 `app/` 预览服务器    | 否       | 否   |
 | `bash`           | 执行 Shell 命令           | 否       | 否   |
+
+## Vibe Coding 约定
+
+如果让 Agent 生成网页应用，需要遵守当前模板约定：
+
+- `app/index.html` 已固定为前端 bootstrap，不需要也不应该重新生成
+- 入口文件固定是 `app/App.tsx`
+- 样式文件固定是 `app/styles.css`
+- 生成完成后需要调用 `start_preview`，默认在 `http://localhost:8080` 预览
 
 ## 常用脚本
 
