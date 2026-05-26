@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.2](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.1...v0.4.2) (2026-05-26)
+
+### Features
+
+- **cli:** 更新 Mini Apps 引导提示与启动示例 ([3e8984a](https://github.com/Jonnytoshen/super-agent-coding/commit/3e8984ad078f5a03df37d2d682e381b2af26885e))
+- **code-analysis:** 新增代码分析示例项目 ([6f4e547](https://github.com/Jonnytoshen/super-agent-coding/commit/6f4e54720a3561e3b42461ac129c025f815b9e53))
+- **mock-model:** 新增代码分析、文档研究和 Vibe Coding cases ([d19fe18](https://github.com/Jonnytoshen/super-agent-coding/commit/d19fe18d8f64c7584d02b2d17ea06727afa75a5d))
+- **tools:** 新增 fetch_url 网页抓取工具 ([4558b0e](https://github.com/Jonnytoshen/super-agent-coding/commit/4558b0ef0e29694e0c4c33dbe90e0dc77a5a0d7a))
+- **tools:** 新增 start_preview 预览服务器工具 ([8aee7d1](https://github.com/Jonnytoshen/super-agent-coding/commit/8aee7d140d47a6ae45a3a63d723e66da6ca37224))
+- **tools:** 注册 fetch_url 和 start_preview 工具 ([1abada4](https://github.com/Jonnytoshen/super-agent-coding/commit/1abada4693e0e0e5ddf743d26a177e955125d356))
+- **vibe-coding:** 新增 Vibe Coding 预置脚手架 ([46dac69](https://github.com/Jonnytoshen/super-agent-coding/commit/46dac69e3f6142372ea2e3aacd26256ada62be28))
+
 ## [0.4.1](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.0...v0.4.1) (2026-05-25)
 
 ### Features
