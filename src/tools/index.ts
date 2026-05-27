@@ -8,6 +8,7 @@ import { ListDirectory } from './ListDirectory';
 import { ReadFile } from './ReadFile';
 import { StartPreview } from './StartPreview';
 import { Weather } from './Weather';
+import { WebFetch } from './WebFetch';
 import { WriteFile } from './WriteFile';
 
 export const tools: ToolDefinition[] = [
@@ -20,6 +21,7 @@ export const tools: ToolDefinition[] = [
   ReadFile(),
   StartPreview(),
   Weather(),
+  WebFetch(),
   WriteFile(),
 ];
 
