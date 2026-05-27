@@ -1,9 +1,9 @@
 /**
- * Mock Model v0.4.2 — Mini Apps
+ * Mock Model v0.4.3 — Search Tool
  *
  * 在 v0.4.1 基础上新增三个 demo 场景：
  * 1. 代码分析 Agent：list_directory + grep 找出项目所有 TODO/FIXME，最后给出归类总结
- * 2. Research Agent：fetch_url 抓文档（可并行多个 URL），最后做综合摘要
+ * 2. Research Agent：web_fetch 抓文档（可并行多个 URL），最后做综合摘要
  * 3. Vibe Coding：Agent 调多次 write_file 生成完整 React 多文件应用
  *
  * 同时保留 v0.4.1 的"测试编辑/搜索/glob/bash/重试"等内置 demo。
@@ -18,7 +18,7 @@ let retryTestCount = 0;
 
 const TEXT_RESPONSES: Record<string, string> = {
   default:
-    '你好！我是 Super Agent v0.4.2 — Mini Apps。试试这三个 demo：' +
+    '你好！我是 Super Agent v0.4.3 — Search Tool。试试这三个 demo：' +
     '\n  1. 找出项目里所有 TODO' +
     '\n  2. 去 https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling 看下文档总结' +
     '\n  3. 做一个待办清单的网页应用',
@@ -140,11 +140,11 @@ function summarizeCodeAnalysis(results: { toolName: string; output: string }[]):
 
 function planResearch(text: string): ToolCallIntent[] {
   const urls = text.match(/https?:\/\/[^\s,，。、]+/g) || [];
-  return urls.slice(0, 3).map((url) => ({ toolName: 'fetch_url', args: { url } }));
+  return urls.slice(0, 3).map((url) => ({ toolName: 'web_fetch', args: { url } }));
 }
 
 function summarizeResearch(results: { toolName: string; output: string }[]): string {
-  const fetched = results.filter((r) => r.toolName === 'fetch_url');
+  const fetched = results.filter((r) => r.toolName === 'web_fetch');
   if (fetched.length === 0) return '没有抓取到任何内容。';
 
   if (fetched.length === 1) {
