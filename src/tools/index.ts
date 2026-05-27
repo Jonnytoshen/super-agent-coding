@@ -9,6 +9,7 @@ import { ReadFile } from './ReadFile';
 import { StartPreview } from './StartPreview';
 import { Weather } from './Weather';
 import { WebFetch } from './WebFetch';
+import { WebSearch } from './WebSearch';
 import { WriteFile } from './WriteFile';
 
 export const tools: ToolDefinition[] = [
@@ -22,6 +23,7 @@ export const tools: ToolDefinition[] = [
   StartPreview(),
   Weather(),
   WebFetch(),
+  WebSearch(),
   WriteFile(),
 ];
 
