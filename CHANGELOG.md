@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.3](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.2...v0.4.3) (2026-05-27)
+
+### Features
+
+- **agent:** rewrite system prompt for web-search mode ([66aba51](https://github.com/Jonnytoshen/super-agent-coding/commit/66aba51634cb07d48b436a03bed3ec91b4c57afd))
+- **config:** export TAVILY_API_KEY and SERPER_API_KEY from env ([02b050c](https://github.com/Jonnytoshen/super-agent-coding/commit/02b050cb41fe5a3c1b78328027e6ac8485395402))
+- **readme:** update README to highlight Research Agent workflow and new tools ([e73d90c](https://github.com/Jonnytoshen/super-agent-coding/commit/e73d90c64fcfd5c6b843e18991a967d957c337c8))
+- **tools:** add web_fetch markdown fetcher ([4059610](https://github.com/Jonnytoshen/super-agent-coding/commit/4059610be844d951c472f5996684d00b718a11ea))
+- **tools:** add WebSearch tool with Tavily and Serper fallback ([04e2a42](https://github.com/Jonnytoshen/super-agent-coding/commit/04e2a429cadd002ddf94d9d7171ec4c4862d41f6))
+- **tools:** migrate to factory-based tools ([0ec1d4e](https://github.com/Jonnytoshen/super-agent-coding/commit/0ec1d4e616b5ea03a45cceff34cc6eeeb47962f8))
+
+### Bug Fixes
+
+- **mock-model:** rename fetch_url → web_fetch and bump to v0.4.3 ([83e70a2](https://github.com/Jonnytoshen/super-agent-coding/commit/83e70a28d6dae8f3184b69f078e33dc52f6d0a58))
+
 ## [0.4.2](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.1...v0.4.2) (2026-05-26)
 
 ### Features
