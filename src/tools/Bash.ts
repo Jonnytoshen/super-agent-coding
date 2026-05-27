@@ -1,0 +1,46 @@
+import { execSync } from 'node:child_process';
+import type { ToolDefinition } from './tool-registry';
+import type { SafeAny } from '../types';
+
+export function Bash(): ToolDefinition {
+  return {
+    name: 'bash',
+    description: '执行 shell 命令并返回输出。适合运行脚本、检查环境、执行构建等操作',
+    parameters: {
+      type: 'object',
+      properties: {
+        command: { type: 'string', description: '要执行的 shell 命令' },
+      },
+      required: ['command'],
+      additionalProperties: false,
+    },
+    isConcurrencySafe: false,
+    isReadOnly: false,
+    maxResultChars: 3000,
+    execute: async ({ command }: { command: string }) => {
+      try {
+        execSync('echo test', { stdio: 'ignore' });
+      } catch {
+        return await Promise.resolve(
+          `[bash 不可用] 当前环境（WebContainer）不支持 shell 命令。本地终端运行 pnpm start 可使用 bash 工具。`,
+        );
+      }
+
+      try {
+        const output = execSync(command, {
+          encoding: 'utf-8',
+          timeout: 10000,
+          maxBuffer: 1024 * 1024,
+          stdio: ['pipe', 'pipe', 'pipe'],
+        });
+        return await Promise.resolve(output || '(命令执行成功，无输出)');
+      } catch (err: unknown) {
+        const stderr = (err as SafeAny)?.stderr || '';
+        const stdout = (err as SafeAny)?.stdout || '';
+        return await Promise.resolve(
+          `命令执行失败 (exit ${(err as SafeAny)?.status || 1}):\n${stderr || stdout || (err as SafeAny)?.message}`,
+        );
+      }
+    },
+  };
+}

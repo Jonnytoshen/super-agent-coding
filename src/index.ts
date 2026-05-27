@@ -2,7 +2,7 @@ import type { ModelMessage } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { DASHSCOPE_API_KEY } from './config';
 import { createInterface } from 'node:readline';
-import { allTools, ToolRegistry } from './tools';
+import { ToolRegistry, tools } from './tools';
 import { agentLoop } from './agent-loop';
 import { VERSION } from './version';
 import { createMockModel } from './mock-model';
@@ -18,7 +18,7 @@ const model = DASHSCOPE_API_KEY ? qwen.chat('qwen-plus-latest') : createMockMode
 
 // 注册工具
 const registry = new ToolRegistry();
-registry.register(...allTools);
+registry.register(...tools);
 
 console.log(`已注册 ${registry.getAll().length} 个工具：`);
 for (const tool of registry.getAll()) {
