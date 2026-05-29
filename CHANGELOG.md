@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.3...v0.5.0) (2026-05-29)
+
+### Features
+
+- **cli:** connect GitHub MCP server and refresh CLI output ([0fd68a7](https://github.com/Jonnytoshen/super-agent-coding/commit/0fd68a7ae74463dee511fa41519ec2a96675dab0))
+- **config:** expose GitHub MCP token from env ([609f4c4](https://github.com/Jonnytoshen/super-agent-coding/commit/609f4c47a9485c2e5bb7cf6001211d370272a969))
+- **readme:** update documentation to highlight GitHub MCP integration and workflow ([2ff8246](https://github.com/Jonnytoshen/super-agent-coding/commit/2ff8246c0a85ca5425b4ce77fb7da3d639145391))
+- **tools:** add MCP stdio client ([7286018](https://github.com/Jonnytoshen/super-agent-coding/commit/728601886024e090dfc251548c8c48b65a1e7c6d))
+- **tools:** register tools from MCP servers ([9a1a14f](https://github.com/Jonnytoshen/super-agent-coding/commit/9a1a14f362d79e5ea315f269000aa1e52d140cfe))
+
 ## [0.4.3](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.2...v0.4.3) (2026-05-27)
 
 ### Features
