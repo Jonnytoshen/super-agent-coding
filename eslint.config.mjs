@@ -47,6 +47,12 @@ export default tseslint.config(
       '@typescript-eslint/no-this-alias': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksVoidReturn: false,
+        },
+      ],
 
       // ── Hono 预留区 ──────────────────────────────────────────────────────────
       // 当 src/routes 或 src/app 路由文件引入后，可在此补充：
