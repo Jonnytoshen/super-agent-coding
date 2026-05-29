@@ -1,8 +1,10 @@
+import { createInterface } from 'node:readline';
 import type { ModelMessage } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { DASHSCOPE_API_KEY } from './config';
-import { createInterface } from 'node:readline';
-import { ToolRegistry, tools } from './tools';
+import CliTable3 from 'cli-table3';
+import ora from 'ora';
+import { DASHSCOPE_API_KEY, GITHUB_PERSONAL_ACCESS_TOKEN } from './config';
+import { MCPClient, ToolRegistry, tools } from './tools';
 import { agentLoop } from './agent-loop';
 import { VERSION } from './version';
 import { createMockModel } from './mock-model';
@@ -20,43 +22,83 @@ const model = DASHSCOPE_API_KEY ? qwen.chat('qwen-plus-latest') : createMockMode
 const registry = new ToolRegistry();
 registry.register(...tools);
 
-console.log(`已注册 ${registry.getAll().length} 个工具：`);
-for (const tool of registry.getAll()) {
-  const flags = [
-    tool.isConcurrencySafe ? '可并发' : '串行',
-    tool.isReadOnly ? '只读' : '读写',
-  ].join(', ');
-  console.log(`  - ${tool.name}（${flags}）`);
+async function connectMCP() {
+  let canSpawn = true;
+  try {
+    const { execSync } = await import('node:child_process');
+    execSync('echo test', { stdio: 'ignore' });
+  } catch {
+    canSpawn = false;
+  }
+
+  if (GITHUB_PERSONAL_ACCESS_TOKEN && canSpawn) {
+    const spinner = ora('正在连接 GitHub MCP Server...').start();
+    console.log('\n连接 GitHub MCP Server...');
+    try {
+      const client = new MCPClient('npx', ['-y', '@modelcontextprotocol/server-github'], {
+        GITHUB_PERSONAL_ACCESS_TOKEN,
+      });
+      const tools = await registry.registerMCPServer('github', client);
+      spinner.succeed(`成功连接 GitHub MCP Server，注册了 ${tools.length} 个工具`);
+      return;
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      spinner.fail(`连接 GitHub MCP Server 失败: ${errMsg}`);
+    } finally {
+      spinner.stop();
+    }
+  }
+
+  if (!GITHUB_PERSONAL_ACCESS_TOKEN) {
+    console.log('\n未配置 GITHUB_PERSONAL_ACCESS_TOKEN，使用 Mock MCP');
+  }
 }
 
-// 创建 readline 接口
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+function printTools(): void {
+  const table = new CliTable3({
+    head: ['工具名称', '类型', '并发', '只读'],
+    style: {
+      border: ['hex(#FFD700)'],
+      head: ['hex(#FFA500)', 'italic'],
+    },
+  });
 
-// 消息列表，存储用户和模型的对话历史
-const messages: ModelMessage[] = [];
+  for (const tool of registry.getAll()) {
+    const isMCP = tool.name.startsWith('mcp__');
+    table.push([
+      tool.name,
+      isMCP ? 'MCP' : '内置',
+      tool.isConcurrencySafe ? '可并发' : '串行',
+      tool.isReadOnly ? '只读' : '读写',
+    ]);
+  }
 
-const SYSTEM = `你是 Super Agent，一个能搜索互联网、读写代码的 AI 助手。
+  console.log(`\n已注册 ${registry.getAll().length} 个工具：`);
+  console.log(table.toString());
+}
 
-你有 web_search 和 web_fetch 两个搜索相关的工具：
-- web_search：搜索互联网，返回相关网页的标题、链接和内容摘要
-- web_fetch：抓取指定 URL 的完整内容，转为 Markdown
+async function main() {
+  await connectMCP();
 
-当用户问的问题需要最新信息时，先用 web_search 搜索，拿到结果后总结回答。
-如果搜索结果的摘要不够详细，用 web_fetch 抓取具体链接的全文。
+  printTools();
 
-回答简洁直接，引用信息时标注来源链接。`;
+  const messages: ModelMessage[] = [];
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
 
-function ask() {
-  rl.question('\nYou: ', (input) => {
-    void (async () => {
+  const SYSTEM = `你是 Super Agent，一个有工具调用能力的 AI 助手。
+你有内置工具和 MCP 工具可用。MCP 工具以 mcp__ 开头，如 mcp__github__list_issues。
+需要查询 GitHub 信息时，使用 mcp__github__ 前缀的工具。
+需要操作本地文件时，使用内置工具。
+回答要简洁直接。`;
+
+  function ask() {
+    rl.question('\nYou: ', async (input) => {
       const trimmed = input.trim();
 
       // 退出条件。如果用户输入 "exit" 或者直接按回车，则退出程序。
       if (!trimmed || trimmed === 'exit') {
         console.log('Bye!');
+        await registry.closeAllMCP();
         rl.close();
         return;
       }
@@ -69,14 +111,15 @@ function ask() {
 
       // 继续提问
       ask();
-    })();
-  });
+    });
+  }
+
+  console.log(`\nSuper Agent v${VERSION} — MCP (type "exit" to quit)`);
+  console.log('试试："查看 vercel/ai 的 issues"、"搜索 MCP 相关的仓库"\n');
+  ask();
 }
 
-console.log(`\nSuper Agent v${VERSION} — Search Tool（"exit" 退出）`);
-console.log('试试：');
-console.log('  1. 搜索一下 Vercel AI SDK 最新版本');
-console.log('  2. 2026 年最流行的 Agent 框架是什么?');
-console.log('  3. 帮我查一下 TypeScript 5.8 有什么新特性?\n');
-
-ask();
+main().catch((err) => {
+  const errMsg = err instanceof Error ? err.message : String(err);
+  console.error(`启动失败: ${errMsg}`);
+});
