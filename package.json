@@ -36,8 +36,10 @@
     "@ai-sdk/openai": "^3.0.63",
     "@ai-sdk/provider": "^3.0.10",
     "ai": "^6.0.182",
+    "cli-table3": "^0.6.5",
     "dotenv": "^17.4.2",
     "fast-glob": "^3.3.3",
+    "ora": "^9.4.0",
     "turndown": "^7.2.4"
   },
   "lint-staged": {
