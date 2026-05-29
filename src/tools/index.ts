@@ -28,3 +28,4 @@ export const tools: ToolDefinition[] = [
 ];
 
 export { type ToolDefinition, ToolRegistry } from './tool-registry';
+export { MCPClient } from './mcp-client';
