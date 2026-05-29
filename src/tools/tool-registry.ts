@@ -1,5 +1,6 @@
 import { jsonSchema } from 'ai';
 import type { SafeAny } from '../types';
+import { type MCPClient } from './mcp-client';
 
 export interface ToolDefinition {
   name: string;
@@ -27,6 +28,7 @@ export class ToolRegistry {
   private exclusiveLock = false; // 当前是否有独占锁持有者
   private concurrentCount = 0; // 当前共享锁持有数
   private waitQueue: Array<() => void> = []; // 阻塞等待中的 resolve 函数
+  private mcpClients: Array<MCPClient> = []; // 追踪已注册的 MCPClient 实例，方便统一关闭
 
   register(...tools: ToolDefinition[]): void {
     for (const tool of tools) {
@@ -110,6 +112,60 @@ export class ToolRegistry {
       };
     }
     return result;
+  }
+
+  /**
+   * 注册 MCP 服务器，并将其工具注册到 ToolRegistry 中
+   * @param serverName MCP 服务器名称
+   * @param client MCPClient 实例
+   * @returns 注册的工具名称列表
+   */
+  async registerMCPServer(serverName: string, client: MCPClient): Promise<string[]> {
+    await client.connect();
+    this.mcpClients.push(client);
+
+    const tools = await client.listTools();
+    const registered: string[] = [];
+
+    for (const tool of tools) {
+      const prefixedName = `mcp__${serverName}__${tool.name}`;
+      if (this.tools.has(prefixedName)) continue;
+
+      const toolClient = client;
+      const originalName = tool.name;
+
+      this.register({
+        name: prefixedName,
+        // description 加了 [MCP:github] 前缀——这不是给模型看的，是给你调试看的。当 Agent 调了一个
+        // 工具但结果不对，日志里一眼就能分辨是内置工具的问题还是 MCP Server 的问题。
+        description: `[MCP:${serverName}] ${tool.description}`,
+        parameters: tool.inputSchema,
+        // TODO:
+        // MCP 工具通常是无状态的 API 调用（查 issue、搜仓库），天然可以并发。
+        // 如果某个 Server 暴露了写操作（比如 create_issue），严格来说应该标记为 false，后续权限系统
+        // 会做更细的控制。
+        isConcurrencySafe: true,
+        isReadOnly: true,
+        maxResultChars: 3000,
+        execute: async (input: unknown) => {
+          return toolClient.callTool(originalName, input as Record<string, unknown>);
+        },
+      });
+
+      registered.push(prefixedName);
+    }
+
+    return registered;
+  }
+
+  /**
+   * 关闭所有 MCP 连接，清理资源
+   */
+  async closeAllMCP(): Promise<void> {
+    for (const client of this.mcpClients) {
+      await client.close();
+    }
+    this.mcpClients = [];
   }
 }
 
