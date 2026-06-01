@@ -8,6 +8,7 @@ import { MCPClient, ToolRegistry, tools } from './tools';
 import { agentLoop } from './agent-loop';
 import { VERSION } from './version';
 import { createMockModel } from './mock-model';
+import { ToolSearch } from './tools/ToolSearch';
 
 // 创建 OpenAI 实例
 const qwen = createOpenAI({
@@ -20,7 +21,7 @@ const model = DASHSCOPE_API_KEY ? qwen.chat('qwen-plus-latest') : createMockMode
 
 // 注册工具
 const registry = new ToolRegistry();
-registry.register(...tools);
+registry.register(...tools, ToolSearch(registry)); // ToolSearch 需要访问 registry，所以放在最后注册
 
 async function connectMCP() {
   let canSpawn = true;
@@ -56,7 +57,7 @@ async function connectMCP() {
 
 function printTools(): void {
   const table = new CliTable3({
-    head: ['工具名称', '类型', '并发', '只读'],
+    head: ['工具名称', '类型', '并发', '只读', '延迟加载'],
     style: {
       border: ['hex(#FFD700)'],
       head: ['hex(#FFA500)', 'italic'],
@@ -70,11 +71,20 @@ function printTools(): void {
       isMCP ? 'MCP' : '内置',
       tool.isConcurrencySafe ? '可并发' : '串行',
       tool.isReadOnly ? '只读' : '读写',
+      tool.shouldDefer ? '✅' : '❌',
     ]);
   }
 
-  console.log(`\n已注册 ${registry.getAll().length} 个工具：`);
+  const allCount = registry.getAll().length;
+  const activeTools = registry.getActiveTools();
+  const estimate = registry.countTokenEstimate();
+
+  console.log(`\nAgent Tools：`);
   console.log(table.toString());
+  console.log(`  全部工具: ${allCount} 个`);
+  console.log(`  活跃工具: ${activeTools.length} 个（非延迟）`);
+  console.log(`  延迟工具: ${allCount - activeTools.length} 个`);
+  console.log(`  Token 估算: ~${estimate.active} (活跃) + ~${estimate.deferred} (延迟)`);
 }
 
 async function main() {
@@ -85,11 +95,11 @@ async function main() {
   const messages: ModelMessage[] = [];
   const rl = createInterface({ input: process.stdin, output: process.stdout });
 
+  const deferredSummary = registry.getDeferredToolSummary();
   const SYSTEM = `你是 Super Agent，一个有工具调用能力的 AI 助手。
-你有内置工具和 MCP 工具可用。MCP 工具以 mcp__ 开头，如 mcp__github__list_issues。
-需要查询 GitHub 信息时，使用 mcp__github__ 前缀的工具。
-需要操作本地文件时，使用内置工具。
-回答要简洁直接。`;
+你有内置工具和 MCP 工具可用。
+如果你需要的工具不在当前列表中，使用 tool_search 工具搜索可用工具。
+回答要简洁直接。${deferredSummary}`;
 
   function ask() {
     rl.question('\nYou: ', async (input) => {
@@ -114,8 +124,8 @@ async function main() {
     });
   }
 
-  console.log(`\nSuper Agent v${VERSION} — MCP (type "exit" to quit)`);
-  console.log('试试："查看 vercel/ai 的 issues"、"搜索 MCP 相关的仓库"\n');
+  console.log(`\nSuper Agent v${VERSION} — Dynamic Tools (type "exit" to quit)`);
+  console.log('试试："查看 vercel/ai 的 issues"（会触发 tool_search）\n');
   ask();
 }
 
