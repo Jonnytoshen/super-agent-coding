@@ -157,6 +157,8 @@ export class ToolRegistry {
         isConcurrencySafe: true,
         isReadOnly: true,
         maxResultChars: 3000,
+        shouldDefer: true,
+        searchHint: `${serverName} ${originalName} ${tool.description}`,
         execute: async (input: unknown) => {
           return toolClient.callTool(originalName, input as Record<string, unknown>);
         },
