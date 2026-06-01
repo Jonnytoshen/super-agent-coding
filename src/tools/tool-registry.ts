@@ -40,6 +40,8 @@ export class ToolRegistry {
   private waitQueue: Array<() => void> = []; // 阻塞等待中的 resolve 函数
   private mcpClients: Array<MCPClient> = []; // 追踪已注册的 MCPClient 实例，方便统一关闭
 
+  private discoveredTools = new Set<string>(); // 追踪已发现的工具，避免重复注册
+
   register(...tools: ToolDefinition[]): void {
     for (const tool of tools) {
       this.tools.set(tool.name, tool);
