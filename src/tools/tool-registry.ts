@@ -56,6 +56,36 @@ export class ToolRegistry {
     return Array.from(this.tools.values());
   }
 
+  /**
+   * 搜索工具 - `searchTools` 方法按精确的工具名匹配。
+   * 因为 System prompt 里已经列出了所有延迟工具的名字，模型直接选名字传过来就行，不需要搞模糊匹配。
+   * 支持逗号分隔一次查多个工具。匹配到的工具自动加入 discoveredTools 集合。
+   * @param query 工具名或逗号分隔的工具名列表
+   * @returns 匹配的工具定义列表
+   */
+  searchTools(query: string): ToolDefinition[] {
+    const q = query.trim();
+    const results: ToolDefinition[] = [];
+
+    // 支持逗号分隔的多个工具名，如 "mcp__github__list_issues,mcp__github__search_repositories"
+    const names = q.includes(',')
+      ? q
+          .split(',')
+          .map((n) => n.trim())
+          .filter(Boolean)
+      : [q];
+
+    for (const name of names) {
+      const tool = this.tools.get(name);
+      if (tool && tool.name !== 'tool_search') {
+        results.push(tool);
+        this.discoveredTools.add(tool.name);
+      }
+    }
+
+    return results;
+  }
+
   // 获取共享锁：只要没人独占就能拿，多个只读工具可以同时持有
   private async acquireConcurrent(): Promise<void> {
     while (this.exclusiveLock) {
