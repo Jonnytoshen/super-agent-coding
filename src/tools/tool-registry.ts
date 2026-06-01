@@ -57,6 +57,39 @@ export class ToolRegistry {
   }
 
   /**
+   * 过滤——`getActiveTools`方法控制哪些工具进入 prompt。延迟工具默认不输出，除非已经被 tool_search 发现过。
+   * @returns 活跃的工具定义列表
+   */
+  getActiveTools(): ToolDefinition[] {
+    return this.getAll().filter((tool) => {
+      if (tool.shouldDefer && !this.discoveredTools.has(tool.name)) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+   * 提示——`getDeferredToolSummary` 方法生成延迟工具的名字列表，附到 System prompt 里。模型看到这个列表
+   * 就知道有哪些能力可用，需要时调 tool_search 搜索。
+   * @returns 延迟工具总结文本，如果没有延迟工具则返回空字符串
+   */
+  getDeferredToolSummary(): string {
+    const deferred = this.getAll().filter((tool) => {
+      return tool.shouldDefer && !this.discoveredTools.has(tool.name);
+    });
+
+    if (deferred.length === 0) return '';
+
+    const lines = deferred.map((t) => {
+      const hint = t.searchHint ? ` — ${t.searchHint}` : '';
+      return `  - ${t.name}${hint}`;
+    });
+
+    return `\n以下工具可用，但需要先通过 tool_search 搜索获取完整定义：\n${lines.join('\n')}`;
+  }
+
+  /**
    * 搜索工具 - `searchTools` 方法按精确的工具名匹配。
    * 因为 System prompt 里已经列出了所有延迟工具的名字，模型直接选名字传过来就行，不需要搞模糊匹配。
    * 支持逗号分隔一次查多个工具。匹配到的工具自动加入 discoveredTools 集合。
