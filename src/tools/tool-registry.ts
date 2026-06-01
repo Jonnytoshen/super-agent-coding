@@ -12,6 +12,16 @@ export interface ToolDefinition {
   isReadOnly?: boolean; // 是否只读
   maxResultChars?: number; // 结果最大长度
 
+  shouldDefer?: boolean; // 是否延迟加载
+
+  /**
+   * 如果 shouldDefer 是 true，可以提供 searchHint 来帮助 ToolSearch 判断是否匹配，避免不必要的加载和执行。
+   * 一个 3-10 个词的短语，描述这个工具能做什么。比如浏览器导航工具的 hint 是 "browser navigate open url webpage"，
+   * Supabase 查询工具的 hint 是 "supabase database sql query select"。模型不会看到这些 hint，它们只
+   * 在 ToolSearch 内部用于关键词匹配。
+   */
+  searchHint?: string;
+
   // 执行函数，输入参数已被验证为 parameters 定义的格式
   execute: (input: SafeAny) => Promise<unknown>;
 }
