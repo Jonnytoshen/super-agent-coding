@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.5.0...v0.6.0) (2026-06-01)
+
+### Features
+
+- **cli:** wire dynamic tool discovery into startup prompt and tool dashboard ([dbd64e9](https://github.com/Jonnytoshen/super-agent-coding/commit/dbd64e9b538481fd3573083f6a94be5d65707d47))
+- **tools:** add active and deferred tool summary APIs ([1318000](https://github.com/Jonnytoshen/super-agent-coding/commit/131800054df53431a6cdc2fbc8c283813bb5414d))
+- **tools:** add deferred metadata fields to tool definition ([85003f0](https://github.com/Jonnytoshen/super-agent-coding/commit/85003f05289c887f3919bd1dbe3c7115fd35a12f))
+- **tools:** add discovered tool tracking in registry ([194dbe2](https://github.com/Jonnytoshen/super-agent-coding/commit/194dbe2de000467c3a9febe107e05cf45a974609))
+- **tools:** add exact-name lookup API for deferred tools ([4fcafad](https://github.com/Jonnytoshen/super-agent-coding/commit/4fcafad2d0f44e9f281cc86970249cfce3a00b02))
+- **tools:** add token estimate stats for tool schemas ([44dc1cc](https://github.com/Jonnytoshen/super-agent-coding/commit/44dc1cc8ea8ad674bc01d62e0204c387a1496d09))
+- **tools:** add tool_search for deferred tool schema loading ([a945b3e](https://github.com/Jonnytoshen/super-agent-coding/commit/a945b3e783edfdf52d70e35d6c8b042ca75deac3))
+- **tools:** mark MCP tools as deferred with search hints ([cc085f3](https://github.com/Jonnytoshen/super-agent-coding/commit/cc085f35f6ff4f095cd9d00ae22bc591e76b1fdd))
+
 ## [0.5.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.4.3...v0.5.0) (2026-05-29)
 
 ### Features
