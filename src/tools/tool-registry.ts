@@ -119,6 +119,36 @@ export class ToolRegistry {
     return results;
   }
 
+  /**
+   * 统计工具定义的 token 数量，分为活跃工具和延迟工具两类。这个函数主要用于调试和监控，帮助我们了解
+   * 工具定义对 prompt 长度的影响。
+   *
+   * 把工具定义序列化后除以 4 得到粗略的 token 数。**active** 是会进 prompt 的，**deferred** 是省下来的。
+   *
+   * @returns 包含活跃工具、延迟工具和总计 token 数量的对象
+   */
+  countTokenEstimate(): { active: number; deferred: number; total: number } {
+    let active = 0;
+    let deferred = 0;
+
+    for (const tool of this.tools.values()) {
+      const schemaSize = JSON.stringify({
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters,
+      }).length;
+      const tokens = Math.ceil(schemaSize / 4); // 粗略估算：1 token ≈ 4 字符
+
+      if (tool.shouldDefer && !this.discoveredTools.has(tool.name)) {
+        deferred += tokens;
+      } else {
+        active += tokens;
+      }
+    }
+
+    return { active, deferred, total: active + deferred };
+  }
+
   // 获取共享锁：只要没人独占就能拿，多个只读工具可以同时持有
   private async acquireConcurrent(): Promise<void> {
     while (this.exclusiveLock) {
