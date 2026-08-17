@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.6.0...v0.7.0) (2026-08-17)
+
+### Features
+
+- **prompt:** introduce PromptBuilder pipe for system prompt assembly ([9ef8149](https://github.com/Jonnytoshen/super-agent-coding/commit/9ef8149ecea24448eea88ea4a8d421557c567d78))
+- **session:** add session persistence and --continue flag ([09c6154](https://github.com/Jonnytoshen/super-agent-coding/commit/09c615471bde21eea4b07fcf67216f5177e3875a))
+
 ## [0.6.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.5.0...v0.6.0) (2026-06-01)
 
 ### Features
