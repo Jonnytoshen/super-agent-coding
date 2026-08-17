@@ -9,6 +9,7 @@ import { agentLoop } from './agent-loop';
 import { VERSION } from './version';
 import { createMockModel } from './mock-model';
 import { ToolSearch } from './tools/ToolSearch';
+import { SessionStore } from './session/store';
 
 // 创建 OpenAI 实例
 const qwen = createOpenAI({
@@ -92,7 +93,19 @@ async function main() {
 
   printTools();
 
-  const messages: ModelMessage[] = [];
+  // Session 持久化
+  const isContinue = process.argv.includes('--continue');
+  const sessionId = 'default';
+  const store = new SessionStore(sessionId);
+
+  let messages: ModelMessage[] = [];
+  if (isContinue && store.exists()) {
+    messages = store.load();
+    console.log(`[Session] 恢复会话，${messages.length} 条历史消息`);
+  } else {
+    console.log(`[Session] 新会话`);
+  }
+
   const rl = createInterface({ input: process.stdin, output: process.stdout });
 
   const deferredSummary = registry.getDeferredToolSummary();
@@ -114,18 +127,26 @@ async function main() {
       }
 
       // 将用户输入添加到消息列表中
-      messages.push({ role: 'user', content: trimmed });
+      const userMsg: ModelMessage = { role: 'user', content: trimmed };
+      messages.push(userMsg);
+      store.append(userMsg);
+
+      const beforeLen = messages.length;
 
       // 进入 Agent 循环
       await agentLoop(model, registry, messages, SYSTEM);
+
+      // 持久化本轮新增的消息（agent loop 会往 messages 里 push assistant/tool 消息）
+      const newMessages = messages.slice(beforeLen);
+      store.appendAll(newMessages);
 
       // 继续提问
       ask();
     });
   }
 
-  console.log(`\nSuper Agent v${VERSION} — Dynamic Tools (type "exit" to quit)`);
-  console.log('试试："查看 vercel/ai 的 issues"（会触发 tool_search）\n');
+  console.log(`\nSuper Agent v${VERSION} — Session + Prompt Pipe (type "exit" to quit)`);
+  console.log('对话会自动保存。用 pnpm run continue 恢复上次对话。\n');
   ask();
 }
 
