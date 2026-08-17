@@ -10,6 +10,14 @@ import { VERSION } from './version';
 import { createMockModel } from './mock-model';
 import { ToolSearch } from './tools/ToolSearch';
 import { SessionStore } from './session/store';
+import {
+  coreRules,
+  deferredTools,
+  PromptBuilder,
+  type PromptContext,
+  sessionContext,
+  toolGuide,
+} from './context/prompt-builder';
 
 // 创建 OpenAI 实例
 const qwen = createOpenAI({
@@ -106,13 +114,26 @@ async function main() {
     console.log(`[Session] 新会话`);
   }
 
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  // Prompt Pipe 组装 system prompt
+  const builder = new PromptBuilder()
+    .pipe('coreRules', coreRules())
+    .pipe('toolGuide', toolGuide())
+    .pipe('deferredTools', deferredTools())
+    .pipe('sessionContext', sessionContext());
 
-  const deferredSummary = registry.getDeferredToolSummary();
-  const SYSTEM = `你是 Super Agent，一个有工具调用能力的 AI 助手。
-你有内置工具和 MCP 工具可用。
-如果你需要的工具不在当前列表中，使用 tool_search 工具搜索可用工具。
-回答要简洁直接。${deferredSummary}`;
+  const promptCtx: PromptContext = {
+    toolCount: registry.getActiveTools().length,
+    deferredToolSummary: registry.getDeferredToolSummary(),
+    sessionMessageCount: messages.length,
+    sessionId,
+  };
+
+  const SYSTEM = builder.build(promptCtx);
+
+  // Debug: 显示 Prompt Pipe 各模块状态
+  builder.debug(promptCtx);
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
 
   function ask() {
     rl.question('\nYou: ', async (input) => {
