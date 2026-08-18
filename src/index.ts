@@ -18,6 +18,8 @@ import {
   sessionContext,
   toolGuide,
 } from './context/prompt-builder';
+import { textToolResultOutput } from './context/tool-result-output';
+import { estimateTokens, microcompact, summarize } from './context/compressor';
 
 // 创建 OpenAI 实例
 const qwen = createOpenAI({
@@ -96,6 +98,192 @@ function printTools(): void {
   console.log(`  Token 估算: ~${estimate.active} (活跃) + ~${estimate.deferred} (延迟)`);
 }
 
+/** Inject fake history messages to simulate a long conversation. */
+function injectFakeHistory(messages: ModelMessage[]) {
+  const fakeHistory: ModelMessage[] = [
+    { role: 'user', content: '帮我看看当前目录有什么文件' },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'tool-call' as const,
+          toolCallId: 'fake-1',
+          toolName: 'list_directory',
+          input: { path: '.' },
+        },
+      ],
+    },
+    {
+      role: 'tool',
+      content: [
+        {
+          type: 'tool-result' as const,
+          toolCallId: 'fake-1',
+          toolName: 'list_directory',
+          output: textToolResultOutput(
+            '[FILE] .env\n[DIR] node_modules\n[FILE] package.json\n[FILE] sample-data.txt\n[DIR] src\n[FILE] tsconfig.json',
+          ),
+        },
+      ],
+    },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'text' as const,
+          text: '当前目录有以下文件：.env, package.json, sample-data.txt, tsconfig.json，以及 src 和 node_modules 两个目录。',
+        },
+      ],
+    },
+    { role: 'user', content: '读一下 package.json' },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'tool-call' as const,
+          toolCallId: 'fake-2',
+          toolName: 'read_file',
+          input: { path: 'package.json' },
+        },
+      ],
+    },
+    {
+      role: 'tool',
+      content: [
+        {
+          type: 'tool-result' as const,
+          toolCallId: 'fake-2',
+          toolName: 'read_file',
+          output: textToolResultOutput(
+            '{\n  "name": "super-agent-08-compaction",\n  "version": "0.8.0",\n  "type": "module",\n  "scripts": { "start": "tsx src/index.ts" },\n  "dependencies": { "ai": "5.0.98", "@ai-sdk/openai": "2.0.44" }\n}',
+          ),
+        },
+      ],
+    },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'text' as const,
+          text: 'package.json 的内容：项目名 super-agent-08-compaction，版本 0.8.0，依赖 ai 和 @ai-sdk/openai。',
+        },
+      ],
+    },
+    { role: 'user', content: '读一下 sample-data.txt' },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'tool-call' as const,
+          toolCallId: 'fake-3',
+          toolName: 'read_file',
+          input: { path: 'sample-data.txt' },
+        },
+      ],
+    },
+    {
+      role: 'tool',
+      content: [
+        {
+          type: 'tool-result' as const,
+          toolCallId: 'fake-3',
+          toolName: 'read_file',
+          output: textToolResultOutput(
+            'Super Agent 工具系统设计文档\n=============================\n\n一、工具注册机制\n每个工具通过 ToolRegistry 统一注册，提供名称、描述、参数 Schema 和执行函数。\n\n二、结果截断策略\nHead/Tail 60/40 分割，保留文件头部和尾部的关键信息。\n\n三、并发控制\n读写锁模式：只读工具共享锁，读写工具独占锁。\n\n四、最佳实践\n1. 工具描述要写"什么时候不该用"比"能干什么"更有价值\n2. 参数描述要具体——"必须是绝对路径"能防一大类错误\n3. 错误信息要对模型友好——模型需要理解为什么失败才能换策略\n4. 结果格式要结构化——JSON 比自然语言更容易被模型准确解析',
+          ),
+        },
+      ],
+    },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'text' as const,
+          text: 'sample-data.txt 是一份工具系统设计文档，包含四个部分：工具注册机制、结果截断策略、并发控制和最佳实践。',
+        },
+      ],
+    },
+    { role: 'user', content: '帮我搜索一下 src 目录里有哪些 export' },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'tool-call' as const,
+          toolCallId: 'fake-4',
+          toolName: 'grep',
+          input: { pattern: 'export', path: 'src' },
+        },
+      ],
+    },
+    {
+      role: 'tool',
+      content: [
+        {
+          type: 'tool-result' as const,
+          toolCallId: 'fake-4',
+          toolName: 'grep',
+          output: textToolResultOutput(
+            'src/tools.ts:1: export const weatherTool\nsrc/tools.ts:20: export const calculatorTool\nsrc/tools.ts:40: export const readFileTool\nsrc/tool-registry.ts:4: export interface ToolDefinition\nsrc/tool-registry.ts:18: export class ToolRegistry\nsrc/agent-loop.ts:7: export async function agentLoop\nsrc/session-store.ts:8: export class SessionStore\nsrc/prompt-builder.ts:12: export class PromptBuilder\nsrc/context-compressor.ts:30: export function microcompact\nsrc/context-compressor.ts:80: export async function summarize',
+          ),
+        },
+      ],
+    },
+    {
+      role: 'assistant',
+      content: [
+        {
+          type: 'text' as const,
+          text: 'src 目录里的主要导出：tools.ts 导出了各种工具定义，tool-registry.ts 导出了 ToolRegistry 类，agent-loop.ts 导出了 agentLoop 函数，还有 SessionStore、PromptBuilder、microcompact 和 summarize 等。',
+        },
+      ],
+    },
+  ];
+  messages.push(...fakeHistory);
+}
+
+async function compactMessages(
+  messages: ModelMessage[],
+  summary: string = '',
+): Promise<{
+  messages: ModelMessage[];
+  summary: string;
+  compressedCount: number;
+  clearedToolResult: number;
+}> {
+  const currentTokens = estimateTokens(messages);
+
+  if (currentTokens < 4000) {
+    return { messages, summary: '', compressedCount: 0, clearedToolResult: 0 };
+  }
+
+  console.log(`\n=== Context Compaction ===`);
+  console.log(`  [压缩检查] ~${currentTokens} tokens, 触发压缩...`);
+
+  const mc2 = microcompact(messages);
+  messages = mc2.messages;
+  if (mc2.cleared > 0) {
+    console.log(`  [Microcompact] 清理了 ${mc2.cleared} 个工具结果`);
+  }
+
+  const comp2 = await summarize(model, messages, summary);
+  if (comp2.compressedCount > 0) {
+    messages = comp2.messages;
+    summary = comp2.summary;
+    console.log(
+      `  [Summarization] 压缩了 ${comp2.compressedCount} 条消息, ~${estimateTokens(messages)} tokens`,
+    );
+  }
+
+  console.log(`========================`);
+
+  return {
+    messages,
+    summary,
+    compressedCount: comp2.compressedCount,
+    clearedToolResult: mc2.cleared,
+  };
+}
+
 async function main() {
   await connectMCP();
 
@@ -106,13 +294,23 @@ async function main() {
   const sessionId = 'default';
   const store = new SessionStore(sessionId);
 
+  let summary = '';
   let messages: ModelMessage[] = [];
   if (isContinue && store.exists()) {
     messages = store.load();
     console.log(`[Session] 恢复会话，${messages.length} 条历史消息`);
+  } else if (process.argv.includes('--inject-fake-history')) {
+    // 注入模拟历史，演示压缩效果
+    injectFakeHistory(messages);
+    console.log(`[Session] 新会话（已注入 ${messages.length} 条模拟历史）`);
   } else {
     console.log(`[Session] 新会话`);
   }
+
+  // 启动时先跑一遍压缩（处理恢复的历史消息）
+  const compacted = await compactMessages(messages, summary);
+  messages = compacted.messages;
+  summary = compacted.summary;
 
   // Prompt Pipe 组装 system prompt
   const builder = new PromptBuilder()
@@ -161,13 +359,17 @@ async function main() {
       const newMessages = messages.slice(beforeLen);
       store.appendAll(newMessages);
 
+      // Check if compaction needed after each turn
+      const compacted = await compactMessages(messages, summary);
+      messages = compacted.messages;
+      summary = compacted.summary;
+
       // 继续提问
       ask();
     });
   }
 
-  console.log(`\nSuper Agent v${VERSION} — Session + Prompt Pipe (type "exit" to quit)`);
-  console.log('对话会自动保存。用 pnpm run continue 恢复上次对话。\n');
+  console.log(`\nSuper Agent v${VERSION} — Compaction (type "exit" to quit)`);
   ask();
 }
 
