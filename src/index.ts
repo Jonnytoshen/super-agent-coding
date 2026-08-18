@@ -253,7 +253,7 @@ async function compactMessages(
   const currentTokens = estimateTokens(messages);
 
   if (currentTokens < 4000) {
-    return { messages, summary: '', compressedCount: 0, clearedToolResult: 0 };
+    return { messages, summary, compressedCount: 0, clearedToolResult: 0 };
   }
 
   console.log(`\n=== Context Compaction ===`);
