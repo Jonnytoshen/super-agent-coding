@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.7.0...v0.8.0) (2026-08-19)
+
+### Features
+
+- **context:** add context compaction with microcompact and summarization ([d63a958](https://github.com/Jonnytoshen/super-agent-coding/commit/d63a95800289c60cecbb2e787aab418c2ca8929d))
+
+### Bug Fixes
+
+- **context:** preserve existing summary when compaction is skipped ([c5fbb04](https://github.com/Jonnytoshen/super-agent-coding/commit/c5fbb04c6245fe616f1cabd641382fc28c66ec9b))
+
 ## [0.7.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.6.0...v0.7.0) (2026-08-17)
 
 ### Features
