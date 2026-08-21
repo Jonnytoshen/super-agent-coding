@@ -1,32 +1,7 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider';
 import { generateText, type ToolResultPart, type ModelMessage } from 'ai';
 import { textToolResultOutput, toolResultOutputToText } from './tool-result-output';
-
-/**
- * Estimate the number of tokens for an array of model messages.
- *
- * **Note**: ~4 chars per token for mixed Chinese/English
- *
- * @param messages The array of model messages to estimate tokens for.
- * @returns The estimated number of tokens.
- */
-export function estimateTokens(messages: ModelMessage[]): number {
-  let chars = 0;
-  for (const msg of messages) {
-    if (typeof msg.content === 'string') {
-      chars += msg.content.length;
-    } else if (Array.isArray(msg.content)) {
-      for (const part of msg.content) {
-        if ('text' in part && typeof part.text === 'string') {
-          chars += part.text.length;
-        } else if ('output' in part) {
-          chars += toolResultOutputToText(part.output).length;
-        }
-      }
-    }
-  }
-  return Math.ceil(chars / 4);
-}
+import { CONTEXT_WINDOW, estimateMessageTokens } from './defense';
 
 // ── Layer 1：Microcompact——清理旧工具结果 ────────────────────────────
 
@@ -130,7 +105,7 @@ const COMPRESS_PROMPT = `你是一个对话压缩系统。你的任务是把 Age
 const CONTEXT_TOKEN_THRESHOLD = 300;
 const KEEP_RECENT_MESSAGES = 6;
 
-export interface CompactionResult {
+export interface SummarizationResult {
   messages: ModelMessage[];
   summary: string;
   compressedCount: number;
@@ -157,8 +132,8 @@ export async function summarize(
   model: LanguageModelV3,
   messages: ModelMessage[],
   existingSummary?: string,
-): Promise<CompactionResult> {
-  const tokenEstimate = estimateTokens(messages);
+): Promise<SummarizationResult> {
+  const tokenEstimate = estimateMessageTokens(messages);
   if (tokenEstimate < CONTEXT_TOKEN_THRESHOLD || messages.length <= KEEP_RECENT_MESSAGES) {
     return { messages, summary: existingSummary || '', compressedCount: 0 };
   }
@@ -235,4 +210,69 @@ export async function summarize(
     console.error('[Compaction] LLM 摘要失败:', err);
     return { messages, summary: existingSummary || '', compressedCount: 0 };
   }
+}
+
+interface CompactionConfig {
+  model: LanguageModelV3;
+  existingSummary?: string;
+  threshold?: number;
+}
+interface CompactionResult {
+  messages: ModelMessage[];
+  summary: string;
+  compressedMessages: number;
+  clearedToolResults: number;
+}
+
+const COMPACTION_TOKEN_THRESHOLD = CONTEXT_WINDOW * 0.75; // 75% of the context window
+
+export async function applyCompaction(
+  messages: ModelMessage[],
+  config: CompactionConfig,
+): Promise<CompactionResult> {
+  const threshold = config.threshold ?? COMPACTION_TOKEN_THRESHOLD;
+  const beforeTokens = estimateMessageTokens(messages);
+
+  if (beforeTokens < threshold) {
+    return {
+      messages,
+      summary: config.existingSummary || '',
+      compressedMessages: 0,
+      clearedToolResults: 0,
+    };
+  }
+
+  console.log(`\n=== Triggering Context Compaction ===`);
+  console.log(
+    `[Before Compaction] ${messages.length} messages, ~${beforeTokens} / ${threshold} tokens`,
+  );
+
+  // Layer 1: Microcompact
+  const mc = microcompact(messages);
+  const afterMCTokens = estimateMessageTokens(mc.messages);
+  console.log(
+    `[Layer 1: Microcompact] Cleared ${mc.cleared} tool results, ~${afterMCTokens} tokens`,
+  );
+
+  // Layer 2: LLM Summarization
+  const sr = await summarize(config.model, mc.messages, config.existingSummary);
+  const afterSRTokens = estimateMessageTokens(sr.messages);
+  if (sr.compressedCount > 0) {
+    console.log(
+      `[Layer 2: LLM Summarization] Compressed ${sr.compressedCount} messages, ~${afterSRTokens} tokens. New summary:\n${sr.summary.slice(0, 150)}...`,
+    );
+  } else {
+    console.log(`[Layer 2: LLM Summarization] No messages compressed, ~${afterSRTokens} tokens`);
+  }
+  console.log(
+    `[After Compaction] ${sr.messages.length} messages, ~${afterSRTokens} tokens(saved ${beforeTokens - afterSRTokens} tokens)`,
+  );
+  console.log(`====================\n`);
+
+  return {
+    messages: sr.messages,
+    summary: sr.summary,
+    compressedMessages: sr.compressedCount,
+    clearedToolResults: mc.cleared,
+  };
 }
