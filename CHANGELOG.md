@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.8.0...v0.9.0) (2026-08-21)
+
+### Features
+
+- **cli:** wire context defense into agent loop with quick commands ([3769ae6](https://github.com/Jonnytoshen/super-agent-coding/commit/3769ae668e6ff571434891ba96318ac68787569d))
+- **context:** add three-layer context defense module ([c33be4d](https://github.com/Jonnytoshen/super-agent-coding/commit/c33be4d8b7bf35fab931e0a7b3db81429fb69cec))
+
 ## [0.8.0](https://github.com/Jonnytoshen/super-agent-coding/compare/v0.7.0...v0.8.0) (2026-08-19)
 
 ### Features
